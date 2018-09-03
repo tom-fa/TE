@@ -5,6 +5,12 @@
 
 DEADLINES:
 ---------TAREA 1: 10.09.2018
+
+
 ---------TAREA 2:
+
+
 ---------TAREA 3:
+
+
 ---------PROYECTO FINAL:
