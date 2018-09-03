@@ -1,15 +1,14 @@
 #MODULES TO USE
 import cv2
 import math
-import Utilities as ut
-from scipy.spatial import distance as dist
 import numpy as np
+'''from scipy.spatial import distance as dist
 import imutils
 import matplotlib.pyplot as plt
 
 from sklearn import svm, datasets
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix'''
 
 # Input: Contour cntr; Margin of error for comparations margin.
 # Output: Tuple (shape,triangle,quad):
@@ -22,7 +21,7 @@ from sklearn.metrics import confusion_matrix
 #        quad: If figure is quadrilateral, denomination in the next list of values.
 #                  Values -> "no cuadrilatero","otro","paralelogramo","cuadrado","rectangulo",
 #                            "rombo","romboide","trapecio","trapezoide"
-
+'''
 #DETECT SHAPE
 def detectShape(cntr,margin): #contour,error margin
     shape = "no shape"
@@ -40,7 +39,7 @@ def triangle_type(cntr, margin):
 # Should be called from detectShape
 def quadrilateral_type(cntr, margin):
     return "no cuadrilatero"
-
+'''
 """********************CODIGO ESTA LISTO PARA SU USO************************"""
 #RGB COLORS IN DICT AND ARRAY IN LAB
 '''CAMBIADO - colores pedidos fueron agregados en formato RGB'''
@@ -66,15 +65,33 @@ labColorNames = []
 for (i, (name, rgb)) in enumerate(colorDictionary.items()):
     labColors[i] = rgb
     labColorNames.append(name)
+'''
+enumerate(colorDictionary.items()) es algo asi:
+(0, ('blanco', (255, 255, 255)))
+(1, ('rojo', (255, 0, 0)))
+(2, ('fucsia', (244, 0, 161)))
+(3, ('amarillo', (255, 255, 0)))
+(4, ('azul', (0, 0, 255)))
+(5, ('verde', (0, 255, 0)))
+(6, ('cyan', (0, 255, 255)))
+'''
 
 # Convert array to LAB color format
 labColors = cv2.cvtColor(labColors, cv2.COLOR_RGB2LAB)
 # Input: Image image; Contour c.
-# Output: Name of color from color dictionary with minimal distance to contour's color.
-#         Values -> "rojo","verde","azul","amarillo","fucsia","cyan","blanco"
+print labColors
+''' Su output es : ['blanco', 'rojo', 'fucsia', 'amarillo', 'azul', 'verde', 'cyan']'''
 """***************************************************************************"""
 
+'''******Cambiado pero sin revisar *****************************************'''
+''' cambios: agregada la funcion para distancia euclidiana,agregadas las partes
+de calculo de distancia maxima y minima'''
+
 #DETECT COLOR
+def EuclidianDistance(t1,t2):
+    dist = sqrt((t1[0]-t2[0])^2 + (t1[1]-t2[1])^2 + (t1[2]-t2[2])^2)
+    return dist
+
 def detectColor(image, c):
     # Create contour mask to ignore rest of the image.
     mask = np.zeros(image.shape[:2], dtype="uint8")
@@ -83,9 +100,24 @@ def detectColor(image, c):
 
     # Obtain mean value of contour internal color.
     mean = cv2.mean(image, mask=mask)[:3]
+    # Loop over array to find the closest in range.
+    closestColor = ''
+    minDistance = float('inf')
+    count = 0 #represets an index, to use it in labColorNames as index call
+    for l in labColors:
+        if EuclidianDistance(minDistance,l) < minDistance:
+            #searchest for the smallest distance.
+            closestColor = labColorNames[count]
+            minDistance = EuclidianDistance(minDistance,l)
+            count += 1
+    return closestColor
+    #labColors - array of colors in LAB mode
+    #labColorNames - list of colors in the same order as presented in the array
+'''************************************************************************'''
 
-    return "rojo"
-
+'''******Cambiado pero sin revisar *****************************************'''
+''' cambios: agregada la funcion para distancia euclidiana,agregadas las partes
+de calculo de distancia maxima y minima'''
 #DETECT OPPOSITE COLOR
 # Input: Image image; Contour c.
 # Output: Name of color from color dictionary with maximal distance to contour's color.
@@ -98,9 +130,17 @@ def detectOppositeColor(image, c):
 
     # Obtain mean value of contour internal color.
     mean = cv2.mean(image, mask=mask)[:3]
-
-    return "rojo"
-
+    oppositeColor = ''
+    maxDistance = -float('inf') # for searching for the biggest tuple
+    count = 0 #represets an index, to use it in labColorNames as index call
+    for l in labColors:
+        if EuclidianDistance(minDistance,l) > maxDistance:
+            #searches for the biggest distance
+            closestColor = labColorNames[count]
+            minDistance = EuclidianDistance(minDistance,l)
+            count += 1
+    return oppositeColor
+'''
 #DEFINE IMAGE NAME AND LOAD IT
 fileNames = ["formas","formas2","triangulos","triangulos2","cuadrilateros"]
 imageName = fileNames[0] #<-Can be modified
@@ -272,3 +312,4 @@ clases.sort()
 
 #Plot confusion matrix
 ut.plot_confusion_matrix(cnf, classes=clases, normalize=False, title='Quadrilateral Shape Confusion Matrix')
+'''
