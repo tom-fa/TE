@@ -2,13 +2,13 @@
 import cv2
 import math
 import numpy as np
-'''from scipy.spatial import distance as dist
+from scipy.spatial import distance as dist
 import imutils
 import matplotlib.pyplot as plt
 
 from sklearn import svm, datasets
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix'''
+from sklearn.metrics import confusion_matrix
 
 # Input: Contour cntr; Margin of error for comparations margin.
 # Output: Tuple (shape,triangle,quad):
@@ -96,7 +96,7 @@ labColors = cv2.cvtColor(labColors, cv2.COLOR_RGB2LAB)
 
  [[233  80 114]]]'''
 
- """***************************************************************************"""
+"""***************************************************************************"""
 
 '''******Cambiado pero sin revisar *****************************************'''
 ''' cambios: agregada la funcion para distancia euclidiana,agregadas las partes
