@@ -108,7 +108,7 @@ def detectColor(image, c):
         if EuclidianDistance(minDistance,l) < minDistance:
             #Searchest for the smallest distance.
             '''if oppositeColor != 'black':'''
-            #Posible, the color is not present in the original dictionary
+            #Posible, but the color is not present in the original dictionary
             closestColor = labColorNames[count]
             minDistance = EuclidianDistance(minDistance,l)
             count += 1
@@ -139,7 +139,7 @@ def detectOppositeColor(image, c):
         if EuclidianDistance(minDistance,l) > maxDistance:
             #searches for the biggest distance
             '''if oppositeColor != 'black':'''
-            # posible, the color is not present in the original dictionary
+            #Posible, but the color is not present in the original dictionary
             oppositeColor = labColorNames[count]
             minDistance = EuclidianDistance(minDistance,l)
             count += 1
