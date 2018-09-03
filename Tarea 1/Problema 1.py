@@ -60,6 +60,7 @@ colorDictionary = {
 labColors = np.zeros((len(colorDictionary), 1, 3), dtype="uint8")
 # Create a list to save corresponding color names.
 labColorNames = []
+''' Su forma final es : ['blanco', 'rojo', 'fucsia', 'amarillo', 'azul', 'verde', 'cyan']'''
 
 # Iterate in color dictionary and save values in respective lists.
 for (i, (name, rgb)) in enumerate(colorDictionary.items()):
@@ -79,9 +80,23 @@ enumerate(colorDictionary.items()) es algo asi:
 # Convert array to LAB color format
 labColors = cv2.cvtColor(labColors, cv2.COLOR_RGB2LAB)
 # Input: Image image; Contour c.
-print labColors
-''' Su output es : ['blanco', 'rojo', 'fucsia', 'amarillo', 'azul', 'verde', 'cyan']'''
-"""***************************************************************************"""
+''' es un tridimensional array:
+
+[[[255 128 128]]
+
+ [[136 208 195]]
+
+ [[137 213 111]]
+
+ [[248 106 223]]
+
+ [[ 82 207  20]]
+
+ [[224  42 211]]
+
+ [[233  80 114]]]'''
+
+ """***************************************************************************"""
 
 '''******Cambiado pero sin revisar *****************************************'''
 ''' cambios: agregada la funcion para distancia euclidiana,agregadas las partes
@@ -144,7 +159,7 @@ def detectOppositeColor(image, c):
             minDistance = EuclidianDistance(minDistance,l)
             count += 1
     return oppositeColor
-
+'''
 """********************CODIGO ESTA LISTO PARA SU USO************************"""
 #DEFINE IMAGE NAME AND LOAD IT
 fileNames = ["formas","formas2","triangulos","triangulos2","cuadrilateros"]
