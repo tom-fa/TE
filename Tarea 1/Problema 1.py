@@ -106,7 +106,9 @@ def detectColor(image, c):
     count = 0 #represets an index, to use it in labColorNames as index call
     for l in labColors:
         if EuclidianDistance(minDistance,l) < minDistance:
-            #searchest for the smallest distance.
+            #Searchest for the smallest distance.
+            '''if oppositeColor != 'black':'''
+            #Posible, the color is not present in the original dictionary
             closestColor = labColorNames[count]
             minDistance = EuclidianDistance(minDistance,l)
             count += 1
@@ -136,21 +138,26 @@ def detectOppositeColor(image, c):
     for l in labColors:
         if EuclidianDistance(minDistance,l) > maxDistance:
             #searches for the biggest distance
-            closestColor = labColorNames[count]
+            '''if oppositeColor != 'black':'''
+            # posible, the color is not present in the original dictionary
+            oppositeColor = labColorNames[count]
             minDistance = EuclidianDistance(minDistance,l)
             count += 1
     return oppositeColor
-'''
+
+"""********************CODIGO ESTA LISTO PARA SU USO************************"""
 #DEFINE IMAGE NAME AND LOAD IT
 fileNames = ["formas","formas2","triangulos","triangulos2","cuadrilateros"]
-imageName = fileNames[0] #<-Can be modified
+imageName = fileNames[0] #<-Can be modified to select other picture (range 0-4)
 
 # OpenCV loads image in BRG format
 image = cv2.imread(imageName+".png")
 
+
 #MANIPULATE THE IMAGE
 # OpenCv uses BRG format, convert it to RGB
 RGB_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
 
 # Resize image
 resizeRatio = 0.5 #<-Can be modified
