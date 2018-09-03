@@ -41,6 +41,7 @@ def triangle_type(cntr, margin):
 def quadrilateral_type(cntr, margin):
     return "no cuadrilatero"
 
+"""********************CODIGO ESTA LISTO PARA SU USO************************"""
 #RGB COLORS IN DICT AND ARRAY IN LAB
 '''CAMBIADO - colores pedidos fueron agregados en formato RGB'''
 #dictionary with color defined in RGB (total of 7 colors)
@@ -53,7 +54,9 @@ colorDictionary = {
     "fucsia": (244,0,161), #fucsia RGB
     "blanco": (255,255,255) #white RGB
 }
+"""***************************************************************************"""
 
+"""********************CODIGO ESTA LISTO PARA SU USO************************"""
 # Create an array (matrix) to save colors and transform them to LAB format later.
 labColors = np.zeros((len(colorDictionary), 1, 3), dtype="uint8")
 # Create a list to save corresponding color names.
@@ -69,6 +72,7 @@ labColors = cv2.cvtColor(labColors, cv2.COLOR_RGB2LAB)
 # Input: Image image; Contour c.
 # Output: Name of color from color dictionary with minimal distance to contour's color.
 #         Values -> "rojo","verde","azul","amarillo","fucsia","cyan","blanco"
+"""***************************************************************************"""
 
 #DETECT COLOR
 def detectColor(image, c):
@@ -134,7 +138,7 @@ colors = list()
 triangles = list()
 quads = list()
 
-#DETECT COLOR,SHAPE AND LOOP OVER CONTOURS 
+#DETECT COLOR,SHAPE AND LOOP OVER CONTOURS
 i = 1
 # Loop over the contours
 for c in cnts:
