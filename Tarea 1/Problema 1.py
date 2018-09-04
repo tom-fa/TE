@@ -80,7 +80,7 @@ enumerate(colorDictionary.items()) es algo asi:
 # Convert array to LAB color format
 labColors = cv2.cvtColor(labColors, cv2.COLOR_RGB2LAB)
 # Input: Image image; Contour c.
-''' es un tridimensional array:
+''' es un threedimensional array:
 
 [[[255 128 128]]
 
