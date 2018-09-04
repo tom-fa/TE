@@ -120,7 +120,7 @@ def detectColor(image, c):
     minDistance = float('inf')
     count = 0 #represets an index, to use it in labColorNames as index call
     for l in labColors:
-        if EuclidianDistance(minDistance,l) < minDistance:
+        if EuclidianDistance(minDistance,l[0]) < minDistance:
             #Searchest for the smallest distance.
             '''if oppositeColor != 'black':'''
             #Posible, but the color is not present in the original dictionary
@@ -151,7 +151,7 @@ def detectOppositeColor(image, c):
     maxDistance = -float('inf') # for searching for the biggest tuple
     count = 0 #represets an index, to use it in labColorNames as index call
     for l in labColors:
-        if EuclidianDistance(minDistance,l) > maxDistance:
+        if EuclidianDistance(minDistance,l[0]) > maxDistance:
             #searches for the biggest distance
             '''if oppositeColor != 'black':'''
             #Posible, but the color is not present in the original dictionary
