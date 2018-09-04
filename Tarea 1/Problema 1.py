@@ -125,7 +125,7 @@ def detectColor(image, c):
             '''if oppositeColor != 'black':'''
             #Posible, but the color is not present in the original dictionary
             closestColor = labColorNames[count]
-            minDistance = EuclidianDistance(minDistance,l)
+            minDistance = EuclidianDistance(minDistance,l[0])
             count += 1
     return closestColor
     #labColors - array of colors in LAB mode
@@ -156,11 +156,11 @@ def detectOppositeColor(image, c):
             '''if oppositeColor != 'black':'''
             #Posible, but the color is not present in the original dictionary
             oppositeColor = labColorNames[count]
-            minDistance = EuclidianDistance(minDistance,l)
+            minDistance = EuclidianDistance(minDistance,l[0])
             count += 1
     return oppositeColor
 '''
-"""********************CODIGO ESTA LISTO PARA SU USO************************"""
+"""********************CODIGO LISTO PARA USO,HAY QUE CAMBIAR PARAMETROS************************"""
 #DEFINE IMAGE NAME AND LOAD IT
 fileNames = ["formas","formas2","triangulos","triangulos2","cuadrilateros"]
 imageName = fileNames[0] #<-Can be modified to select other picture (range 0-4)
