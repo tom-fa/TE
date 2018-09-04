@@ -33,11 +33,20 @@ def detectShape(cntr,margin): #contour,error margin
 # Function that could be defined to determine the triangle type.
 # Should be called from detectShape
 def triangle_type(cntr, margin):
+    return "escaleno"
+    return "isosceles"
+    return "equilatero"
     return "no triangulo"
 
 # Function that could be defined to determine the quadrilateral type.
 # Should be called from detectShape
 def quadrilateral_type(cntr, margin):
+    return "rectangulo"
+    return "cuadrado"
+    return "rombo"
+    return "romboide"
+    return "trapezoide"
+    return "trapecio"
     return "no cuadrilatero"
 '''
 """********************CODIGO ESTA LISTO PARA SU USO************************"""
