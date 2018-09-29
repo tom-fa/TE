@@ -1,14 +1,16 @@
-#MODULES TO USE
+'''IMPORTING MODULES'''
 import cv2
 import math
 import numpy as np
 from scipy.spatial import distance as dist
 import imutils
 import matplotlib.pyplot as plt
+import Utilities as ut
 
 from sklearn import svm, datasets
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+
 
 # Input: Contour cntr; Margin of error for comparations margin.
 # Output: Tuple (shape,triangle,quad):
@@ -21,99 +23,187 @@ from sklearn.metrics import confusion_matrix
 #        quad: If figure is quadrilateral, denomination in the next list of values.
 #                  Values -> "no cuadrilatero","otro","paralelogramo","cuadrado","rectangulo",
 #                            "rombo","romboide","trapecio","trapezoide"
-'''
-#DETECT SHAPE
-def detectShape(cntr,margin): #contour,error margin
-    shape = "no shape"
+
+'''DETECTING SHAPE AND TYPE'''
+#the dictionary used to get a shape's name by the number of its sides, more shapes can be added if necessary.
+dictShapes = {3:'triangulo',4:'cuadrilatero',5:'pentagono',6:'hexagono',7:'heptagono',\
+8:'octogono',9:'eneagono',10:'decagono',11:'endecagono',12:'dodecagono'}
+
+def detectShape(cntr,margin): #input: contour,error margin, output: shape,triangle type, quad type
+    shape = 'no shape'
     triangle = "no triangulo"
     quad = "no cuadrilatero"
-
+    if len(cntr) in dictShapes:
+        shape = dictShapes[len(cntr)]
+        if shape == 'triangulo':
+            triangle = triangle_type(cntr,margin)
+        elif shape == 'cuadrilatero':
+            quad = quadrilateral_type(cntr,margin)
+    else:
+        if len(cntr) > 12:
+            shape = 'circulo'
+        #in any other case returns default 'no shape','no triangulo','no cuadrilatero'
     return shape,triangle,quad
 
-# Function that could be defined to determine the triangle type.
-# Should be called from detectShape
-def triangle_type(cntr, margin):
-    return "escaleno"
-    return "isosceles"
-    return "equilatero"
-    return "no triangulo"
+#auxilary triangle type detection function
+def triangle_type(cntr,margin): #input: contour,error margin, output: triangle type
+    equality = equalSides(cntr,margin,'triangulo')
+    if equality == 3: #3 equal pairs
+        return "equilatero"
+    elif equality == 0 : # none are equal
+        return "escaleno"
+    else:
+        return "isosceles"
 
-# Function that could be defined to determine the quadrilateral type.
-# Should be called from detectShape
-def quadrilateral_type(cntr, margin):
-    return "rectangulo"
-    return "cuadrado"
-    return "rombo"
-    return "romboide"
-    return "trapezoide"
-    return "trapecio"
-    return "no cuadrilatero"
-'''
-"""********************CODIGO ESTA LISTO PARA SU USO************************"""
-#RGB COLORS IN DICT AND ARRAY IN LAB
-'''CAMBIADO - colores pedidos fueron agregados en formato RGB'''
+#auxilary triangle type detection function
+def quadrilateral_type(cntr, margin): #input: contour,error margin, output: quad type
+    if not ut.isConvex(cntr):
+        return 'otro'
+    elif ut.isConvex(cntr):
+        if equalAngles(cntr,margin) == 6: #6 combinations in total, 4!/(2!2!)
+            if equalSides(cntr,margin,'cuadrilatero') == 4:
+                return 'cuadrado'
+            else:
+                return 'rectangulo'
+        elif equalAngles(cntr,margin) == 2:
+                if equalSides(cntr,margin,'cuadrilatero') == 4:
+                    return 'rombo'
+                else:
+                    if equalSides(cntr,margin,'cuadrilatero') == 2:
+                        return 'romboide' #does consider, in this the case, that rhomboid == parallelogram
+        else:
+            if parallel(cntr,margin) == 1:
+                return 'trapecio' #a pair of parallel sides
+
+    else:
+        return 'trapezoide'
+
+
+'''AUXILARY FUNCTIONS'''
+def parallel(vertexList,margin):
+    paral = 0
+    vertex1=vertexList[0][0][0],vertexList[0][0][1] #tuples (coordinate1,coordinate2)
+    vertex2=vertexList[1][0][0],vertexList[1][0][1]
+    vertex3=vertexList[2][0][0],vertexList[2][0][1]
+    vertex4=vertexList[3][0][0],vertexList[3][0][1]
+    slope1 = abs(ut.slope(vertex1,vertex2))
+    slope2 = abs(ut.slope(vertex2,vertex3))
+    slope3 = abs(ut.slope(vertex3,vertex4))
+    slope4 = abs(ut.slope(vertex4,vertex1))
+    if ut.equal(slope1,slope2,margin):
+        paral +=1
+    if ut.equal(slope2,slope3,margin): #all comparison combinations
+        paral +=1
+    if ut.equal(slope3,slope4,margin):
+        paral +=1
+    if ut.equal(slope4,slope1,margin):
+        paral +=1
+    return paral
+
+
+def equalAngles(vertexList,margin):
+    eq = 0
+    alpha = ut.internalAngle(vertexList,0)
+    beta = ut.internalAngle(vertexList,1)  #function is only called while analyzing a quad
+    gamma = ut.internalAngle(vertexList,2)
+    omega = ut.internalAngle(vertexList,3)
+    if ut.equal(alpha, beta, margin):
+        eq += 1
+    if ut.equal(beta, gamma, margin):
+        eq += 1
+    if ut.equal(gamma, omega, margin):
+        eq += 1
+    if ut.equal(alpha, omega, margin):
+        eq += 1
+    if ut.equal(alpha, gamma, margin): #all posible combinations: 4!/(2!2!)=6
+        eq +=1
+    if ut.equal(beta, omega, margin):
+        eq += 1
+    return eq
+
+def equalSides(vertexList,margin,type):
+    eq = 0
+    if type == 'triangulo':                             #only called while analyzing a triangle
+        vertex1=vertexList[0][0][0],vertexList[0][0][1] #tuples (coordinate1,coordinate2)
+        vertex2=vertexList[1][0][0],vertexList[1][0][1]
+        vertex3=vertexList[2][0][0],vertexList[2][0][1]
+        side1 = ut.distance(vertex1,vertex2)
+        side2 = ut.distance(vertex2,vertex3)
+        side3 = ut.distance(vertex1,vertex3)
+        if ut.equal(side1, side2, margin):
+            eq += 1
+        if ut.equal(side2, side3, margin):
+            eq += 1
+        if ut.equal(side1, side3, margin):
+            eq += 1
+    if type == 'cuadrilatero':                          #only called while analyzing a quad
+        vertex1=vertexList[0][0][0],vertexList[0][0][1] #tuples (coordinate1,coordinate2)
+        vertex2=vertexList[1][0][0],vertexList[1][0][1]
+        vertex3=vertexList[2][0][0],vertexList[2][0][1]
+        vertex4=vertexList[3][0][0],vertexList[3][0][1]
+        side1=ut.distance(vertex1,vertex2)
+        side2=ut.distance(vertex2,vertex3)
+        side3=ut.distance(vertex3,vertex4)
+        side4=ut.distance(vertex1,vertex4)
+        if ut.equal(side1, side2, margin):
+            eq += 1
+        if ut.equal(side2, side3, margin):
+            eq += 1
+        if ut.equal(side3, side4, margin):
+            eq += 1
+        if ut.equal(side1, side4, margin):
+            eq += 1
+    return eq
+
+
+
+
+'''RGB2LAB DICTIONARY AND OBTAINING LAB COLOR ARRAY'''
 #dictionary with color defined in RGB (total of 7 colors)
 colorDictionary = {
+    "blanco": (255,255,255),  #white RGB
     "rojo": (255, 0, 0), #red RGB
     "verde": (0, 255, 0), #green RGB
     "azul": (0, 0, 255), #blue RGB
     "amarillo": (255,255,0), #yellow RGB
     "cyan": (0,255,255), #cyan RGB
-    "fucsia": (244,0,161), #fucsia RGB
-    "blanco": (255,255,255) #white RGB
+    "fucsia": (255,0,255), #fucsia RGB
 }
-"""***************************************************************************"""
 
-"""********************CODIGO ESTA LISTO PARA SU USO************************"""
+
 # Create an array (matrix) to save colors and transform them to LAB format later.
 labColors = np.zeros((len(colorDictionary), 1, 3), dtype="uint8")
 # Create a list to save corresponding color names.
 labColorNames = []
-''' Su forma final es : ['blanco', 'rojo', 'fucsia', 'amarillo', 'azul', 'verde', 'cyan']'''
 
-# Iterate in color dictionary and save values in respective lists.
+
+# Iterate over color dictionary and save values in respective lists.
 for (i, (name, rgb)) in enumerate(colorDictionary.items()):
     labColors[i] = rgb
     labColorNames.append(name)
+
 '''
-enumerate(colorDictionary.items()) es algo asi:
+enumerate(colorDictionary.items()) has this form:
 (0, ('blanco', (255, 255, 255)))
 (1, ('rojo', (255, 0, 0)))
 (2, ('fucsia', (244, 0, 161)))
-(3, ('amarillo', (255, 255, 0)))
-(4, ('azul', (0, 0, 255)))
-(5, ('verde', (0, 255, 0)))
-(6, ('cyan', (0, 255, 255)))
+(3, ('amarillo', (255, 255, 0)))...
 '''
 
 # Convert array to LAB color format
 labColors = cv2.cvtColor(labColors, cv2.COLOR_RGB2LAB)
 # Input: Image image; Contour c.
-''' es un threedimensional array:
 
+'''3D array looks like this
 [[[255 128 128]]
-
  [[136 208 195]]
+ [[137 213 111]]...]'''
 
- [[137 213 111]]
+#Note: the array has the same order of colors as the list labColorNames.Order is 'randomized' every time the program is executed.
 
- [[248 106 223]]
-
- [[ 82 207  20]]
-
- [[224  42 211]]
-
- [[233  80 114]]]'''
-
-"""***************************************************************************"""
-
-'''******Cambiado pero sin revisar *****************************************'''
-''' cambios: agregada la funcion para distancia euclidiana,agregadas las partes
-de calculo de distancia maxima y minima'''
-
-#DETECT COLOR
-def EuclidianDistance(t1,t2):
-    dist = sqrt((t1[0]-t2[0])^2 + (t1[1]-t2[1])^2 + (t1[2]-t2[2])^2)
+'''COLOR DETECTION'''
+def EuclidianDistance(t1,t2): #t1 - tuple with FP (mean), t2- list of integers (color of the figure)
+    dist = ((t1[0]-float(t2[0]))**2 + (t1[1]-float(t2[1]))**2 + (t1[2]-float(t2[2]))**2)**0.5
     return dist
 
 def detectColor(image, c):
@@ -127,24 +217,18 @@ def detectColor(image, c):
     # Loop over array to find the closest in range.
     closestColor = ''
     minDistance = float('inf')
-    count = 0 #represets an index, to use it in labColorNames as index call
+    count = 0 #represets an index in labColorNames
     for l in labColors:
-        if EuclidianDistance(minDistance,l[0]) < minDistance:
+        if EuclidianDistance(mean,l[0]) < minDistance:
             #Searchest for the smallest distance.
-            '''if oppositeColor != 'black':'''
-            #Posible, but the color is not present in the original dictionary
             closestColor = labColorNames[count]
-            minDistance = EuclidianDistance(minDistance,l[0])
-            count += 1
+            minDistance = EuclidianDistance(mean,l[0])
+        count += 1
     return closestColor
     #labColors - array of colors in LAB mode
     #labColorNames - list of colors in the same order as presented in the array
-'''************************************************************************'''
 
-'''******Cambiado pero sin revisar *****************************************'''
-''' cambios: agregada la funcion para distancia euclidiana,agregadas las partes
-de calculo de distancia maxima y minima'''
-#DETECT OPPOSITE COLOR
+'''DETECTING OPPOSITE COLOR'''
 # Input: Image image; Contour c.
 # Output: Name of color from color dictionary with maximal distance to contour's color.
 #         Values -> "rojo","verde","azul","amarillo","fucsia","cyan","blanco"
@@ -158,33 +242,32 @@ def detectOppositeColor(image, c):
     mean = cv2.mean(image, mask=mask)[:3]
     oppositeColor = ''
     maxDistance = -float('inf') # for searching for the biggest tuple
-    count = 0 #represets an index, to use it in labColorNames as index call
+    count = 0 #represets an index in labColorNames
     for l in labColors:
-        if EuclidianDistance(minDistance,l[0]) > maxDistance:
-            #searches for the biggest distance
-            '''if oppositeColor != 'black':'''
-            #Posible, but the color is not present in the original dictionary
+        if EuclidianDistance(mean,l[0]) > maxDistance:
+            #searches for the greatest distance
             oppositeColor = labColorNames[count]
-            minDistance = EuclidianDistance(minDistance,l[0])
-            count += 1
+            maxDistance = EuclidianDistance(mean,l[0])
+        count += 1
     return oppositeColor
-'''
-"""********************CODIGO LISTO PARA USO,HAY QUE CAMBIAR PARAMETROS************************"""
-#DEFINE IMAGE NAME AND LOAD IT
+#alternatively, could have used enumerate to get index of every color, used count instead.
+
+'''DEFINE FILE NAME AND LOAD THE FILE'''
 fileNames = ["formas","formas2","triangulos","triangulos2","cuadrilateros"]
-imageName = fileNames[0] #<-Can be modified to select other picture (range 0-4)
-
+imageName = fileNames[0] #range (0,4) in this case, used for selection of the file.
 # OpenCV loads image in BRG format
-image = cv2.imread(imageName+".png")
+image = cv2.imread(imageName +'.png')
 
+# caso 'formas2' - el 'romboide' no es el rombo segun calculos / al verficar en editor de imagines
+# caso 'formas2' - triangulos blanco y rojo estan anotados en orden inverso
+# hay error de anotacion de color en txt - magenta en vez de celeste en uno de los casos
 
-#MANIPULATE THE IMAGE
+'''MANIPULATING THE IMAGE'''
 # OpenCv uses BRG format, convert it to RGB
 RGB_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-
 # Resize image
-resizeRatio = 0.5 #<-Can be modified
+resizeRatio = 2 #<-Can be modified
 resized = imutils.resize(image, width=int(resizeRatio*image.shape[1]))
 
 # Blur image slightly
@@ -197,21 +280,16 @@ lab = cv2.cvtColor(blurred, cv2.COLOR_BGR2LAB)
 # Use a threshold to create a two colored image
 minimumThreshold = 10 #<-Can be modified
 thresh = cv2.threshold(gray, minimumThreshold, 255, cv2.THRESH_BINARY)[1]
-
-#FIND CONTOURS
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-
-#INITIALIZE LISTS
 results = list()
 shapes = list()
 colors = list()
 triangles = list()
 quads = list()
-
-#DETECT COLOR,SHAPE AND LOOP OVER CONTOURS
 i = 1
-# Loop over the contours
+
+'''COMPUTING CONTOURS'''
 for c in cnts:
     # Compute the center of the contour
     M = cv2.moments(c)
@@ -222,12 +300,13 @@ for c in cnts:
     peri = cv2.arcLength(c, True)
 
     # Aproximate contour rects
-    approximationMargin = 0.05 #<-Can be modified
+    approximationMargin = 0.008 #<-Can be modified
+    # bigger values lower the precision of the contours
     approx = cv2.approxPolyDP(c, approximationMargin * peri, True)
 
 
     # Detect form and color of contour(IMPLEMENTAR!)
-    equalityMargin = 0.3 #<-Can be modified
+    equalityMargin = 0.05
     shape,triangle,quad = detectShape(approx,equalityMargin)
     color = detectColor(lab, c)
     opcolor = colorDictionary[detectOppositeColor(lab, c)]
@@ -253,31 +332,25 @@ for c in cnts:
     colors.append(color)
     triangles.append(triangle)
     quads.append(quad)
-
     i+=1
 
-#SAVE AND PLOT THE IMAGE
-# OpenCv uses BRG format, convert it to RGB
+'''BGR2RGB CONVERSION'''
 RGB_img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-# Save image
+'''SAVE IMAGE'''
 cv2.imwrite('generated_{}.png'.format(imageName),image)
 
-# Plot image
+'''PLOT IMAGE'''
 fig=plt.figure(figsize=(12, 12), dpi= 80)
 plt.xticks([]), plt.yticks([])
 plt.imshow(RGB_img)
 plt.show()
 
-
-#SAVE RESULTS IN A FILE
-# Save results
+'''SAVE RESULTS IN TXT'''
 f = open('generated_{}.txt'.format(imageName),"w")
 for r in results:
     f.write(','.join(list(r))+'\n')
 f.close()
-
-#OBTAIN REAL DATA FROM TXT FILE
 f =  open('{}.txt'.format(imageName))
 trueresults = list()
 trueshapes = list()
@@ -292,55 +365,52 @@ for line in f:
     truetriangles.append(tr[3])
     truequads.append(tr[4])
 
-#PLOT GENERAL SHAPE CONFUSION MATRIX
-#Define true data and prediction for matrix
+'''DEFINE TRUE DATA AND PREDICTIONS FOR THE MATRIX'''
 truedata = trueshapes
 prediction = shapes
 
-#Calculate confusion matrix
+'''CALCULATE CONFUSION MATRIX'''
 cnf = confusion_matrix(truedata,prediction)
 clases = list(set(truedata+prediction))
 clases.sort()
 
-#Plot confusion matrix
+'''PLOT SHAPE CONFUSION MATRIX'''
 ut.plot_confusion_matrix(cnf, classes=clases, normalize=False, title='General Shape Confusion matrix')
 
-#PLOT COLOR CONFUSION MATRIX
-#Define true data and prediction for matrix
+'''DEFINE TRUE DATA AND PREDICTIONS'''
 truedata = truecolors
 prediction = colors
 
-#Calculate confusion matrix
+'''CALCULATE COLOR CONFUSION MATRIX'''
 cnf = confusion_matrix(truedata,prediction)
 clases = list(set(truedata+prediction))
 clases.sort()
 
-#Plot confusion matrix
+'''PLOT COLOR CONFUSION MATRIX'''
 ut.plot_confusion_matrix(cnf, classes=clases, normalize=False, title='Color Confusion Matrix')
 
-#PLOT TRIANGULAR CONFUSION MATRIX
-#Define true data and prediction for matrix
+'''DEFINE TRUE DATA AND PREDICTIONS'''
 truedata = truetriangles
 prediction = triangles
 
-#Calculate confusion matrix
+'''CALCULATE TRIANGULAR TYPE CONFUSION MATRIX'''
 cnf = confusion_matrix(truedata,prediction)
 clases = list(set(truedata+prediction))
 clases.sort()
 
-#Plot confusion matrix
+'''PLOT TRIANGULAR SHAPE CONFUSION MATRIX'''
 ut.plot_confusion_matrix(cnf, classes=clases, normalize=False, title='Triangular Shape Confusion Matrix')
 
-#PLOT QUADRILATERAL CONFUSION MATRIX
-#Define true data and prediction for matrix
+'''DEFINE TRUE DATA AND PREDICTIONS'''
 truedata = truequads
 prediction = quads
 
-#Calculate confusion matrix
+
+'''CALCULATE QUAD TYPE CONFUSION MATRIX'''
 cnf = confusion_matrix(truedata,prediction)
 clases = list(set(truedata+prediction))
 clases.sort()
 
-#Plot confusion matrix
+
+'''PLOT QUAD TYPE CONFUSION MATRIX'''
 ut.plot_confusion_matrix(cnf, classes=clases, normalize=False, title='Quadrilateral Shape Confusion Matrix')
-'''

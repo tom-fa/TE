@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 
 
-	
+
 #Input: Numeric values v1 and v2; Error margin for equality comparisson.
 #Output: True if the ratio between both numbers is within [1-margin,1]
 #        else False.
@@ -40,10 +40,10 @@ def equal(v1, v2, margin):
 def distance(p1,p2):
 	x1, y1 = p1
 	x2, y2 = p2
-	
+
 	dx = float(x1-x2)
 	dy = float(y1-y2)
-	
+
 	return math.sqrt(dx*dx + dy*dy)
 
 #Input: Contour cntr; Vertexes indexes i1 and i2.
@@ -51,18 +51,17 @@ def distance(p1,p2):
 def edgeLength(cntr,i1,i2):
 	p1 = cntr[i1][0]
 	p2 = cntr[i2][0]
-	
 	return distance(p1,p2)
 
 #Input: 2D points p1 and p2.
-#Output: Slope of rect between p1 and p2.
+#Output: Slope of rect between p1 and p2. #pendiente
 def slope(p1,p2):
 	x1, y1 = p1
 	x2, y2 = p2
-	
+
 	num = (float(y1)-float(y2))
 	den = (float(x1)-float(x2))
-	
+
 	if den != 0:
 		return num/den
 	else:
@@ -70,38 +69,37 @@ def slope(p1,p2):
 			return -inf
 		else:
 			return inf
-			
+
 #Input: Contour cntr; Vertexes indexes i1 and i2.
 #Output: Slope of rect between the contour vertexes with indexes i1 and i2.
 def edgeSlope(cntr,i1,i2):
+	p1 = cntr[i1][0]
 	p2 = cntr[i2][0]
-	
 	return slope(p1,p2)
 
 #Input: Contour cntr; Vertexes indexes i.
 #Output: Countour's internal angle in vertex with index i.
 def internalAngle(cntr,i):
 	n = len(cntr)
-	
 	p1 = cntr[(i-1)%n][0]
 	p2 = cntr[i%n][0]
 	p3 = cntr[(i+1)%n][0]
-	
+
 	convex = convexAngle(p1,p2,p3)
-	
+
 	x1, y1 = p1
 	x2, y2 = p2
 	x3, y3 = p3
-	
+
 	n1 = distance(p1,p2)
 	n2 = distance(p2,p3)
-	
+
 	cos = ((x1-x2)*(x3-x2)+(y1-y2)*(y3-y2))/(n1*n2)
 	ang = math.acos(cos)
-	
+
 	if not convex:
 		ang = (2*math.acos(-1)) - ang
-	
+
 	return ang*180/math.acos(-1)
 
 #Input: 2D points p1, p2 and p3
@@ -111,16 +109,16 @@ def convexAngle(p1,p2,p3):
 	x1, y1 = p1
 	x2, y2 = p2
 	x3, y3 = p3
-	
+
 	m1 = slope(p1,p2)
 	m2 = slope(p2,p3)
-	
+
 	q1 = 0
 	q2 = 0
-	
+
 	dx1 = 1 if x1 <= x2 else -1
 	dy1 = 1 if y1 <= y2 else -1
-	
+
 	if dx1 == 1 and dy1 == 1:
 		q1 = 1
 	elif dx1 == -1 and dy1 == 1:
@@ -129,10 +127,10 @@ def convexAngle(p1,p2,p3):
 		q1 = 3
 	else:
 		q1 = 4
-	
+
 	dx2 = 1 if x2 <= x3 else -1
 	dy2 = 1 if y2 <= y3 else -1
-	
+
 	if dx2 == 1 and dy2 == 1:
 		q2 = 1
 	elif dx2 == -1 and dy2 == 1:
@@ -141,7 +139,7 @@ def convexAngle(p1,p2,p3):
 		q2 = 3
 	else:
 		q2 = 4
-		
+
 	if q1 == 1:
 		if q2 == 1:
 			return m1 > m2
